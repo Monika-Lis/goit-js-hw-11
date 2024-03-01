@@ -25,7 +25,13 @@ async function fetchImages(query, page) {
     const response = await axios.get(`${BASE_URL}?${searchParams}`);
     return response.data;
   } catch (error) {
-    Notiflix.Notify.failure('Something went wrong, please try again later.');
+    if (gallery.children.length >= data.totalHits) {
+      Notiflix.Notify.info(
+        "We're sorry, but you've reached the end of search results."
+      );
+    } else {
+      Notiflix.Notify.failure('Something went wrong, please try again later.');
+    }
   }
 }
 
