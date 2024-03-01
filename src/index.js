@@ -1,14 +1,14 @@
 import axios from 'axios';
 import Notiflix from 'notiflix';
+import SimpleLightbox from 'simplelightbox';
 
 const API_KEY = '42646310-ef56125427efcfe7b949942a4';
 const BASE_URL = 'https://pixabay.com/api/';
 const searchForm = document.getElementById('search-form');
 const gallery = document.getElementById('gallery');
-const loadMoreBtn = document.getElementById('load-more');
-
 let currentPage = 1;
 let searchQuery = '';
+let lightbox;
 
 async function fetchImages(query, page) {
   const searchParams = new URLSearchParams({
@@ -41,21 +41,25 @@ function updateGallery(hits) {
         comments,
         downloads,
       }) => `
-        <div class="photo-card">
-            <a href="${largeImageURL}"><img src="${webformatURL}" alt="${tags}" loading="lazy" /></a>
+        <a href="${largeImageURL}" class="photo-card">
+            <img src="${webformatURL}" alt="${tags}" loading="lazy" />
             <div class="info">
                 <p class="info-item"><b>Likes</b> ${likes}</p>
                 <p class="info-item"><b>Views</b> ${views}</p>
                 <p class="info-item"><b>Comments</b> ${comments}</p>
                 <p class="info-item"><b>Downloads</b> ${downloads}</p>
             </div>
-        </div>
+        </a>
     `
     )
     .join('');
 
   gallery.insertAdjacentHTML('beforeend', markup);
-  loadMoreBtn.style.display = 'block';
+  if (lightbox) {
+    lightbox.refresh();
+  } else {
+    lightbox = new SimpleLightbox('.gallery a');
+  }
 }
 
 async function onSearch(e) {
@@ -63,7 +67,6 @@ async function onSearch(e) {
   currentPage = 1;
   searchQuery = e.currentTarget.elements.searchQuery.value;
   gallery.innerHTML = '';
-  loadMoreBtn.style.display = 'none';
 
   const data = await fetchImages(searchQuery, currentPage);
   if (data.hits.length === 0) {
@@ -81,12 +84,18 @@ async function onLoadMore() {
   const data = await fetchImages(searchQuery, currentPage);
   updateGallery(data.hits);
   if (gallery.children.length >= data.totalHits) {
-    loadMoreBtn.style.display = 'none';
     Notiflix.Notify.info(
       "We're sorry, but you've reached the end of search results."
     );
   }
 }
 
+window.addEventListener('scroll', () => {
+  const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+
+  if (clientHeight + scrollTop >= scrollHeight - 5) {
+    onLoadMore();
+  }
+});
+
 searchForm.addEventListener('submit', onSearch);
-loadMoreBtn.addEventListener('click', onLoadMore);

@@ -22,6 +22,9 @@ body {
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transform: translateY(20px);
+  animation: slideIn 0.5s forwards;
 }
 
 .photo-card img {
@@ -43,4 +46,11 @@ body {
 .load-more {
   padding: 10px 20px;
   margin-top: 20px;
+}
+
+@keyframes slideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
